@@ -3,7 +3,8 @@
 Gemini 2.0 Flash を活用して、開発ログやアイデアメモを自動で整理・保存する Streamlit アプリです。
 Google ドライブなどの同期フォルダに保存することで、**NotebookLM のソースとして直接活用可能な「自分専用のナレッジベース」を自動構築します。**
 
-![App Screenshot](app_screenshot.png) 
+<img width="1920" height="878" alt="AI-Log-Manager-" src="https://github.com/user-attachments/assets/413bc07f-3ac8-4d9f-8ab8-3751d7be24a8" />
+
 ## 🚀 特徴
 
 * **AIによる自動整理**: テキストを投げ込むだけで、Gemini が「プロジェクト分類」「タグ付け」「タイトル生成」「要約」を自動で行います。
