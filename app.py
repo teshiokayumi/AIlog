@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
 # Page configuration
 st.set_page_config(page_title="AI Log Manager", layout="wide")
@@ -18,8 +18,29 @@ with st.sidebar:
     
     # API Key Input
     api_key_env = os.getenv("GOOGLE_API_KEY")
-    api_key = st.text_input("Google API Key", value=api_key_env if api_key_env else "", type="password")
+    api_key = st.text_input("Google API Key", value=api_key_env if api_key_env else "", type="password").strip()
+
+    # Model Selection
+    st.markdown("### モデル設定")
+    if st.button("🔄 利用可能なモデルを取得"):
+        try:
+            genai.configure(api_key=api_key)
+            models = [m.name.replace("models/", "") for m in genai.list_models() if "generateContent" in m.supported_generation_methods]
+            st.session_state["available_models"] = models
+            st.success(f"{len(models)} 個のモデルが見つかりました")
+        except Exception as e:
+            st.error(f"モデル取得失敗: {e}")
+
+    default_models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-001", "gemini-1.5-pro", "gemini-pro"]
+    model_options = st.session_state.get("available_models", default_models)
     
+    # Ensure default options are included if fetch fails or is empty, but don't duplicate
+    for dm in default_models:
+        if dm not in model_options:
+            model_options.append(dm)
+            
+    selected_model = st.selectbox("使用モデル", model_options, index=0)
+
     # Root Path Input
     default_path = "./my_ai_logs"
     root_path_input = st.text_input("保存先ルートフォルダ", value=default_path)
@@ -46,7 +67,7 @@ st.caption("開発ログや対話履歴をGemini 2.0 Flashで自動整理・保�
 
 input_text = st.text_area("ログ入力エリア", height=300, placeholder="ここにテキストを貼り付けてください...")
 
-def save_log(api_key, root_path, text):
+def save_log(api_key, root_path, text, model_name):
     if not api_key:
         st.error("API Keyを入力してください。")
         return
@@ -57,7 +78,7 @@ def save_log(api_key, root_path, text):
 
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel(model_name)
         
         prompt = """
         あなたは優秀なAIアシスタントです。以下の入力テキストを分析し、指定されたJSON形式でのみ出力してください。
@@ -77,7 +98,7 @@ def save_log(api_key, root_path, text):
         }}
         """.format(text=text)
 
-        with st.spinner("Gemini 2.0 Flashが分析中..."):
+        with st.spinner(f"{model_name} が分析中..."):
             response = model.generate_content(prompt)
             # Remove markdown code blocks if present
             cleaned_response = response.text.replace("```json", "").replace("```", "").strip()
@@ -140,4 +161,4 @@ created_at: {time_str}
         st.info(f"解析に失敗したため、原文をそのまま保存しました: {fallback_file}")
 
 if st.button("保存・整理を実行"):
-    save_log(api_key, root_path_input, input_text)
+    save_log(api_key, root_path_input, input_text, selected_model)
