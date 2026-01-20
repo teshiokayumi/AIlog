@@ -22,8 +22,8 @@ Google ドライブなどの同期フォルダに保存することで、**Noteb
 
 ### 1. リポジトリのクローン
 ```bash
-git clone [https://github.com/your-username/ai-log-manager.git](https://github.com/your-username/ai-log-manager.git)
-cd ai-log-manager
+git clone [(https://github.com/teshiokayumi/AIlog)
+cd AIlog
 
 ```
 
